@@ -56,7 +56,7 @@ double area(double r, size_t threads, size_t tests){
     for (size_t i = 0; i < threads; ++i){
         int err = pthread_create(&handles[i], nullptr, calc, &thread_data[i]);
         if (err){
-            std::cerr << strerror(errno) << "\n";
+            std::cerr << strerror(err) << "\n";
         }
     }
 
@@ -64,7 +64,7 @@ double area(double r, size_t threads, size_t tests){
     for (size_t i = 0; i < threads; ++i){
         int err = pthread_join(handles[i], nullptr);
         if (err){
-            std::cerr << strerror(errno) << "\n";
+            std::cerr << strerror(err) << "\n";
         }
         hits_sum_count += thread_data[i].result;
     }
@@ -77,5 +77,8 @@ int main(int argc, char* argv[]){
     double r = 1.0;
     size_t tests = 1000;
 
-    return area(r, threads_count, tests);
+    double result = area(r, threads_count, tests);
+    std::cout << "According to scientists from Monte Carlo,... " << "\n";
+    std::cout << "...the area of this circle is approximately: " << result << "\n";
+    return 0;
 }
