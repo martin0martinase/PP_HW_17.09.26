@@ -1,6 +1,10 @@
 #include <iostream>
 #include <thread>
 
+bool isDotInsideCircle(double x, double y, double r){
+    return x * x + y * y <= r * r;
+}
+
 struct Data{
     double r;
     size_t tests;
