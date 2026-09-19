@@ -2,6 +2,7 @@
 #include <thread>
 #include <vector>
 #include <random>
+#include <pthread.h>
 
 struct Data{
     double r;
@@ -34,7 +35,7 @@ void* calc(void* arg)
     std::mt19937 gen(data->seed);
     std::uniform_real_distribution<double> dist(-data->r, data->r);
 
-    size_t hits = 0;
+    double hits = 0;
     for (size_t i = 0; i < data->tests; ++i) {
         double x = dist(gen);
         double y = dist(gen);
@@ -47,13 +48,34 @@ void* calc(void* arg)
     return nullptr;
 }
 
-int main(int argc, char* argv[]){
+double area(double r, size_t threads, size_t tests){
+    std::vector<Data> thread_data(threads);
+    CutandFillVector(thread_data, r, tests);
+    
+    std::vector<pthread_t> handles(threads);
+    for (size_t i = 0; i < threads; ++i){
+        int err = pthread_create(&handles[i], nullptr, calc, &thread_data[i]);
+        if (err){
+            std::cerr << strerror(errno) << "\n";
+        }
+    }
 
+    double hits_sum_count = 0;
+    for (size_t i = 0; i < threads; ++i){
+        int err = pthread_join(handles[i], nullptr);
+        if (err){
+            std::cerr << strerror(errno) << "\n";
+        }
+        hits_sum_count += thread_data[i].result;
+    }
+
+    double square_area = (2 * r) * (2 * r);
+    return square_area * hits_sum_count / tests;
+}
+int main(int argc, char* argv[]){
     size_t threads_count = 67;
     double r = 1.0;
     size_t tests = 1000;
 
-    std::vector<Data> thread_data(threads_count);
-    CutandFillVector(thread_data, r, tests);
-    return 0;
+    return area(r, threads_count, tests);
 }
